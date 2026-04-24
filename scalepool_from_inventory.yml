@@ -1,47 +1,48 @@
 ---
-- name: Scale or descale a VM pool based on a pool max and min size
-  hosts: localhost
-  connection: local
+- name: Scale or descale a VM pool (pool is defined in the inventory)
+  # SAMPLE INVENTORY
+  # [appname]
+  # arbitrary_name
+  # arbitrary_name2
+  # arbitrary_name01
+  # arbitrary_namef
+  # [appname:vars]
+  # namespace=dap
+  # label_selector="app=appname"
+  hosts: "{{ appname }}"
+  # machines that have not been create/scaled have no ability for connection yet
   gather_facts: false
   vars:
     # These two can come from an event in EDA
     # scale_direction: 'up'
     # scale_direction: 'down'
-    min_vms: 1
-    max_vms: 5
 
-    appname: dummyapp
+    # appname: dummyapp
 
-    # By convention vm names are
-    # vm-app-## (starting at "01")
-
-    # Creation requires a namespace
-    # namespace: "{{ appname }}"
-    namespace: dap
-      
   tasks:
       # Find out how many VMS are up
     - name: Get all existing VirtualMachines in the {{ appname }} pool
       redhat.openshift_virtualization.kubevirt_vm_info:
         namespace: "{{ namespace | default(omit) }}"
         label_selectors:
-          # always select by an appname
-          - app = {{ appname }}
+          # always select by an appname, in this case it comes from the inventory
+          - "{{ label_selector }}"
       register: vm_information
+      delegate_to: localhost
+      run_once: true
       tags:
         - evaluation
 
-    - name: Get list of all vms, sorted
+    - name: Get list of all existing vms, sorted
       ansible.builtin.set_fact:
         #vm_list: "vm_information.resources[].name"
         vm_list: "vm_information.resources | selectattr('name') | sort"
       tags:
         - evaluation
-      
 
     - name: Find out if VM creation or removal is needed based on pool size
       ansible.builtin.set_fact:
-        action_needed: "{{ true if (len(vm_list) > min_vms && len(vm_list) < max_vms ) else false }}" 
+        action_needed: "{{ true if (len(vm_list) < len(groups(app_name)) && len(vm_list) < 1 ) else false }}" 
       tags:
         - evaluation
       
