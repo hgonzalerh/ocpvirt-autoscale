@@ -20,7 +20,7 @@
     namespace: dap
       
   tasks:
-      # Find out how many VMS are up
+    # Find out how many VMS are up
     - name: Get all existing VirtualMachines in the {{ appname }} pool
       redhat.openshift_virtualization.kubevirt_vm_info:
         namespace: "{{ namespace | default(omit) }}"
@@ -50,18 +50,24 @@
         state: present
         name: vm-{{ appname }}{{ '%02d'%(len(vm_list) + 1) }}
         namespace: dap
+        labels:
+          - 'app: {{ appname }}'
         wait: true
         run_strategy: Always
-        data_volume_templates: templates/datavolume-{{ appname }}.yml
-        spec: templates/vmspec-{{ appname }}.yml
-      when: action_needed and scale_direction =='up'
+        data_volume_templates: "{{ lookup('template', 'templates/datavolume-' ~ appname ~ '.yml') }}"
+        # spec: templates/vmspec-{{ appname }}.yml
+        spec: "{{ lookup('template', 'templates/vmspec-' ~ appname ~ '.yml') }}"
+      when: > 
+        (action_needed and scale_direction =='up') or
+        (len(vm_list)<= min_vms and scale_direction=='up')
+
                 
     - name: Delete the latest VM by name
       when: action_needed and scale_direction =='down'
       redhat.openshift_virtualization.kubevirt_vm:
         state: absent
         # Delete the last existing machine
-        name: "{{ vm_information[-1] }}"
+        name: "{{ vm_list[-1] }}"
         namespace: dap
         wait: true
 
