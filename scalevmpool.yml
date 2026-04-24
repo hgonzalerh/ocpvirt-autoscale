@@ -17,7 +17,6 @@
 
     # Creation requires a namespace
     # namespace: "{{ appname }}"
-    namespace: dap
       
   tasks:
     # Find out how many VMS are up
@@ -41,7 +40,7 @@
 
     - name: Find out if VM creation or removal is needed based on pool size
       ansible.builtin.set_fact:
-        action_needed: "{{ true if (len(vm_list) > min_vms && len(vm_list) < max_vms ) else false }}" 
+        action_needed: "{{ true if (len(vm_list) > min_vms and len(vm_list) < max_vms ) else false }}" 
       tags:
         - evaluation
       
