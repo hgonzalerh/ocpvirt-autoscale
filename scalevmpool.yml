@@ -34,7 +34,7 @@
     - name: Get list of all vms, sorted
       ansible.builtin.set_fact:
         #vm_list: "vm_information.resources[].name"
-        vm_list: "{{ vm_information.resources | selectattr('metadata.name') | sort }}"
+        vm_list: "{{ vm_information.resources | map(attribute='metadata.name') | list | sort }}"
       tags:
         - evaluation
       
