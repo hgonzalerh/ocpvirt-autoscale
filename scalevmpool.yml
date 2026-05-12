@@ -16,13 +16,13 @@
     # vm-app-## (starting at "01")
 
     # Creation requires a namespace
-    # namespace: "{{ appname }}"
+    app_namespace: dpa
       
   tasks:
     # Find out how many VMS are up
     - name: Get all existing VirtualMachines in the {{ appname }} pool
       redhat.openshift_virtualization.kubevirt_vm_info:
-        namespace: "{{ namespace | default(omit) }}"
+        namespace: "{{ app_namespace | default(omit) }}"
         label_selectors:
           # always select by an appname
           - app = {{ appname }}
@@ -48,7 +48,7 @@
       redhat.openshift_virtualization.kubevirt_vm:
         state: present
         name: vm-{{ appname }}-{{ '%02d'%((vm_list | length) + 1) }}
-        namespace: dap
+        namespace: "{{ app_namespace }}"
         labels:
           - 'app: {{ appname }}'
         wait: true
