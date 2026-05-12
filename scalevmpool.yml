@@ -54,13 +54,43 @@
           app: "{{ appname }}"
         wait: true
         run_strategy: Always
-        data_volume_templates: "{{ lookup('template', 'templates/datavolume-' ~ appname ~ '.yml') | from_yaml }}"
+        data_volume_templates:
+          - metadata:
+              name: my-vm-rootdisk
+            spec:
+              sourceRef:
+                kind: DataSource
+                name: rhel9
+                namespace: openshift-virtualization-os-images
+              storage:
+                resources:
+                  requests:
+                    storage: 30Gi
         # spec: templates/vmspec-{{ appname }}.yml
-        spec: "{{ lookup('template', 'templates/vmspec-' ~ appname ~ '.yml') }}"
+        spec:
+          template:
+            metadata: {}        # ← added before spec
+          domain:
+            memory:
+              guest: 2Gi
+            devices:
+              disks:
+                - name: rootdisk
+                  disk:
+                    bus: virtio
+              interfaces:
+                - name: default
+                  masquerade: {}
+          networks:
+            - name: default
+              pod: {}
+          volumes:
+            - name: rootdisk
+              dataVolume:
+                name: my-vm-rootdisk
       when: > 
         (action_needed and scale_direction =='up') or
         ((vm_list | length)<= min_vms and scale_direction=='up')
-
                 
     - name: Delete the latest VM by name
       when: action_needed and scale_direction =='down'
