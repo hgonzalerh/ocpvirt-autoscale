@@ -25,7 +25,7 @@
         namespace: "{{ app_namespace | default(omit) }}"
         label_selectors:
           # always select by an appname
-          - app = {{ appname }}
+          app: "{{ appname }}"
       register: vm_information
       tags:
         - evaluation
@@ -50,7 +50,7 @@
         name: vm-{{ appname }}-{{ '%02d'%((vm_list | length) + 1) }}
         namespace: "{{ app_namespace }}"
         labels:
-          - 'app: {{ appname }}'
+          app: "{{ appname }}"
         wait: true
         run_strategy: Always
         data_volume_templates: "{{ lookup('template', 'templates/datavolume-' ~ appname ~ '.yml') }}"
