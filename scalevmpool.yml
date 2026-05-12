@@ -54,7 +54,7 @@
           app: "{{ appname }}"
         wait: true
         run_strategy: Always
-        data_volume_templates: "{{ lookup('template', 'templates/datavolume-' ~ appname ~ '.yml') }}"
+        data_volume_templates: "{{ lookup('template', 'templates/datavolume-' ~ appname ~ '.yml') | from_yaml }}"
         # spec: templates/vmspec-{{ appname }}.yml
         spec: "{{ lookup('template', 'templates/vmspec-' ~ appname ~ '.yml') }}"
       when: > 
