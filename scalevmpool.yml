@@ -24,8 +24,9 @@
       redhat.openshift_virtualization.kubevirt_vm_info:
         namespace: "{{ app_namespace | default(omit) }}"
         label_selectors:
+          # Selectors are a list, labels later are a dict
           # always select by an appname
-          app: "{{ appname }}"
+          - "app={{ appname }}"
       register: vm_information
       tags:
         - evaluation
